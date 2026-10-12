@@ -1,12 +1,12 @@
 {
-    "version": "0.3.1",
+    "version": "0.4.0",
     "description": "Turn every display pure red for astronomy without losing your night vision",
     "homepage": "https://github.com/Vasallo94/redlights",
     "license": "MIT",
     "architecture": {
         "64bit": {
-            "url": "https://github.com/Vasallo94/redlights/releases/download/v0.3.1/redlights-windows-x64.zip",
-            "hash": "83da0989ffedb2c773b4c89bee625edb8259cf81e57efd7e8ff90895c1ecf663"
+            "url": "https://github.com/Vasallo94/redlights/releases/download/v0.4.0/redlights-windows-x64.zip",
+            "hash": "26876c39e0dc805a95d171e742113b1e36788920214a32f5711ff8c16e5720f9"
         }
     },
     "bin": "redlights.exe",
