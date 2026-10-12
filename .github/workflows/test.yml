@@ -1,0 +1,33 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  install:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Instalar Scoop
+        shell: pwsh
+        run: |
+          iex "& {$(irm get.scoop.sh)} -RunAsAdmin"   # el runner es administrador
+          "$env:USERPROFILE\scoop\shims" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+
+      - name: Instalar cada manifiesto y ejecutarlo
+        shell: pwsh
+        run: |
+          foreach ($m in Get-ChildItem bucket/*.json) {
+            scoop install $m.FullName
+            $app = $m.BaseName
+            $out = & $app --version
+            Write-Output $out
+            if ($out -notmatch $app) { throw "$app no se instaló bien" }
+          }

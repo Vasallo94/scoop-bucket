@@ -1,0 +1,40 @@
+name: update
+
+on:
+  schedule:
+    - cron: '37 6 * * *'   # cada día
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Instalar Scoop
+        shell: pwsh
+        run: |
+          iex "& {$(irm get.scoop.sh)} -RunAsAdmin"
+          "$env:USERPROFILE\scoop\shims" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+
+      - name: Buscar versiones nuevas, probarlas y publicar
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          # checkver de Scoop: lee la última release y reescribe versión, URL y hash
+          & "$env:USERPROFILE\scoop\apps\scoop\current\bin\checkver.ps1" -Dir "$PWD\bucket" -Update
+          $changed = git status --porcelain bucket
+          if (-not $changed) { Write-Output "Todo al día"; exit 0 }
+          foreach ($m in Get-ChildItem bucket/*.json) {
+            scoop install $m.FullName
+            $out = & $m.BaseName --version
+            if ($out -notmatch $m.BaseName) { throw "$($m.BaseName) no se instaló bien" }
+          }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Actualizar: $((git diff --cached --name-only; git diff --name-only) -join ', ')"
+          git push
